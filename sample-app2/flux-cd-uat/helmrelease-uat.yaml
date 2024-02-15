@@ -1,0 +1,15 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: sample-app-two-uat
+  namespace: sample-app-two-uat
+  annotations:
+    clusterconfig.azure.com/use-managed-source: "true"
+spec:
+  chart: 
+    spec:
+      chart: sample-app2/charts/hello-world
+      sourceRef:
+        kind: GitRepository
+        name: sample-app-two
+  interval: 10m0s

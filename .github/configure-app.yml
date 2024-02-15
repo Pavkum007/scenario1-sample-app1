@@ -1,0 +1,41 @@
+name: Configure Application
+
+on:
+    workflow_dispatch:
+        inputs:
+            app-name:
+                description: "Application Name"
+                required: true
+                default: "my-app"
+
+env:
+    ARM_CLIENT_ID: "${{ secrets.ARM_CLIENT_ID }}"
+    ARM_TENANT_ID: "${{ secrets.ARM_TENANT_ID }}"
+    ARM_CLIENT_SECRET: "${{ secrets.ARM_CLIENT_SECRET }}"
+    ARM_SUBSCRIPTION_ID: "3227ff79-d1ef-47b0-80f4-67de840b37dd"
+    GITHUB_USERNAME: '${{secrets.PACKAGE_ID}}'
+    GITHUB_PASSWORD: '${{secrets.PACKAGE_SECRET}}'
+    #working-directory: .
+
+jobs:
+    configure-argocd-app:
+        name: 'Configure Flux Application'
+
+        steps:
+            # Checkout the repository to the GitHub Actions runner
+            - name: 'Checkout'
+              uses: actions/checkout@v2
+
+            # Az CLI Login
+            - name: 'Az CLI Login'
+              uses: azure/login@v1
+              with:
+                  creds: '{"clientId":"${{ env.ARM_CLIENT_ID }}","clientSecret":"${{ secrets.ARM_CLIENT_SECRET }}","subscriptionId":"${{ env.ARM_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.ARM_TENANT_ID }}"}'
+           
+            # Configure Application
+            - name: Configure Flux Configuration
+              working-directory: './${{github.event.inputs.app-name}}/${{github.event.inputs.app-name}}-cd'
+              run: |
+                  terraform init
+                  terraform plan -no-color
+                  terraform apply -auto-approve -no-color
